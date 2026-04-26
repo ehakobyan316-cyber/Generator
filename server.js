@@ -23,14 +23,19 @@ app.get('/api/settings', (req, res) => {
                 generatorMax: "1000",
                 targetNumber: null,
                 winningNumbers: "",
-                generatorEnabled: true
+                clickCount: 0
             };
             fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
             res.json(defaultSettings);
             return;
         }
         const data = fs.readFileSync(settingsPath, 'utf8');
-        res.json(JSON.parse(data));
+        const parsed = JSON.parse(data);
+        if (parsed.clickCount === undefined) {
+            parsed.clickCount = 0;
+            fs.writeFileSync(settingsPath, JSON.stringify(parsed, null, 2));
+        }
+        res.json(parsed);
     } catch (error) {
         console.error('Error reading settings:', error);
         res.status(500).json({ error: 'Error reading settings' });
@@ -40,7 +45,7 @@ app.get('/api/settings', (req, res) => {
 // POST settings
 app.post('/api/settings', (req, res) => {
     try {
-        const { generatorMin, generatorMax, targetNumber, winningNumbers } = req.body;
+        const { generatorMin, generatorMax, targetNumber, winningNumbers, clickCount } = req.body;
         
         const currentData = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
         
@@ -48,6 +53,14 @@ app.post('/api/settings', (req, res) => {
         if (generatorMax !== undefined) currentData.generatorMax = generatorMax;
         if (targetNumber !== undefined) currentData.targetNumber = targetNumber;
         if (winningNumbers !== undefined) currentData.winningNumbers = winningNumbers;
+        
+        if (clickCount !== undefined) {
+            if (clickCount === 0) {
+                currentData.clickCount = 0;
+            } else {
+                currentData.clickCount = (currentData.clickCount || 0) + clickCount;
+            }
+        }
         
         fs.writeFileSync(settingsPath, JSON.stringify(currentData, null, 2));
         res.json({ success: true, data: currentData });

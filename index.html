@@ -119,10 +119,47 @@ body {
     background: gold;
     cursor: pointer;
 }
+
+.game-stopped-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.game-stopped-overlay.show { display: flex; }
+
+.stopped-content {
+    text-align: center;
+    color: white;
+}
+
+.stopped-title {
+    font-size: 32px;
+    color: #ff6b6b;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+}
+
+.stopped-message {
+    font-size: 18px;
+    color: #aaa;
+}
 </style>
 </head>
 
 <body>
+
+<!-- game stopped overlay -->
+<div id="gameStoppedOverlay" class="game-stopped-overlay">
+    <div class="stopped-content">
+        <div class="stopped-title">ԽԱՂԸ ԿԱՆԳՆԱԾ Է</div>
+        <div class="stopped-message">Դիմեք ադմինիստրատորին</div>
+    </div>
+</div>
 
 <div class="phone-container">
     <div class="main-wrapper">
@@ -154,24 +191,79 @@ body {
 </div>
 
 <script>
-const API_URL = 'https://generator-xzgq.onrender.com/api/settings';
+const API_URL = 'https://generatorr-h8mw.onrender.com/api/settings';
+// const API_URL = 'http://localhost:3000/api/settings';
 
 let logs = [];
-let settings = { generatorMin: 1, generatorMax: 1000, targetNumber: null, winningNumbers: '' };
+let settings = { generatorMin: 1, generatorMax: 1000, targetNumber: null, winningNumbers: '', clickCount: 0 };
+let localClickCount = parseInt(localStorage.getItem('localClickCount')) || 0;
+const MAX_CLICKS = 20;
 
 function loadSettings() {
     fetch(API_URL)
         .then(response => response.json())
         .then(data => {
             console.log('Settings loaded:', data);
+            
+            const adminResetTimestamp = localStorage.getItem('adminResetTimestamp');
+            if (adminResetTimestamp) {
+                localClickCount = 0;
+                localStorage.setItem('localClickCount', 0);
+                localStorage.removeItem('adminResetTimestamp');
+                console.log('Admin reset detected, localClickCount reset to 0');
+            }
+            
             settings = data;
+            checkButtonState();
         })
         .catch(error => {
             console.error('Error loading settings:', error);
         });
 }
 
+function checkForAdminReset() {
+    const adminResetTimestamp = localStorage.getItem('adminResetTimestamp');
+    if (adminResetTimestamp) {
+        localClickCount = 0;
+        localStorage.setItem('localClickCount', 0);
+        localStorage.removeItem('adminResetTimestamp');
+        settings.clickCount = 0;
+        checkButtonState();
+        loadSettings();
+    }
+}
+
+function checkButtonState() {
+    const btn = document.querySelector('.generate-btn');
+    const overlay = document.getElementById('gameStoppedOverlay');
+    const totalClicks = (settings.clickCount || 0) + localClickCount;
+    if (totalClicks >= MAX_CLICKS) {
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        }
+        if (overlay) overlay.classList.add('show');
+    } else {
+        if (btn) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        }
+        if (overlay) overlay.classList.remove('show');
+    }
+}
+
 function runGenerator() {
+    checkForAdminReset();
+    
+    const btn = document.querySelector('.generate-btn');
+    const totalClicks = (settings.clickCount || 0) + localClickCount;
+    
+    if (totalClicks >= MAX_CLICKS) {
+        checkButtonState();
+        return;
+    }
 
     let min = parseInt(settings.generatorMin) || 1;
     let max = parseInt(settings.generatorMax) || 1000;
@@ -219,6 +311,26 @@ function runGenerator() {
     localStorage.setItem('generatorLogs', JSON.stringify(logs));
     document.getElementById('history-content').innerText =
         logs.map(x => `[${x}]`).join(', ');
+
+    localClickCount++;
+    localStorage.setItem('localClickCount', localClickCount);
+    
+    const newTotalClicks = (settings.clickCount || 0) + localClickCount;
+    if (newTotalClicks >= MAX_CLICKS) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+    }
+    
+    fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clickCount: localClickCount })
+    }).then(() => {
+        localClickCount = 0;
+        localStorage.setItem('localClickCount', 0);
+        loadSettings();
+    }).catch(err => console.error('Error saving click count:', err));
 }
 
 function closeModal() {

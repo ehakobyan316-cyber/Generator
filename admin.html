@@ -63,22 +63,22 @@
             background: rgba(0, 0, 0, 0.7);
             border: 2px solid #00f2ff;
             border-radius: 20px;
-            padding: 30px;
-            width: 100%; max-width: 400px;
+            padding: 15px;
+            width: 100%; max-width: 360px;
             box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
         }
 
         .settings-title {
             color: white;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             text-shadow: 0 0 15px rgba(0, 242, 255, 0.8);
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .input-label {
@@ -110,13 +110,13 @@
             background: linear-gradient(180deg, #00f2ff 0%, #0084ff 100%);
             border: none;
             width: 100%;
-            padding: 15px;
-            border-radius: 12px;
+            padding: 10px;
+            border-radius: 10px;
             color: white;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 10px;
             box-shadow: 0 8px 25px rgba(0, 242, 255, 0.4);
         }
 
@@ -129,13 +129,13 @@
             background: linear-gradient(180deg, #ff6b6b 0%, #cc0000 100%);
             border: none;
             width: 100%;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 8px;
+            border-radius: 10px;
             color: white;
-            font-size: 16px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 8px;
             box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
         }
 
@@ -206,13 +206,18 @@
         <button class="back-btn" onclick="clearTargetNumber()">
             ՄԱՔՐԵԼ ԹԻՎԸ
         </button>
+
+        <button class="save-btn" onclick="resetClickCount()" style="background: linear-gradient(180deg, #4efd3a 0%, #00c853 100%);">
+            ՎԵՐԱԿԱՆԳՆԵԼ ՍԵՂՄՈՒՄՆԵՐԸ
+        </button>
         
         <div id="statusMessage" class="status-message"></div>
     </div>
 </div>
 
 <script>
-    const API_URL = 'https://generator-xzgq.onrender.com/api/settings';
+    const API_URL = 'http://localhost:3000/api/settings';
+    // const API_URL = 'https://generatorr-h8mw.onrender.com/api/settings';
 
     function loadSettings() {
         fetch(API_URL)
@@ -354,6 +359,25 @@
 
     function goBack() {
         window.open('index.html', '_self');
+    }
+
+    function resetClickCount() {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clickCount: 0 })
+        })
+        .then(response => response.json())
+        .then(() => {
+            localStorage.setItem('localClickCount', 0);
+            localStorage.setItem('adminResetTimestamp', Date.now());
+            showStatus('Կոճակը միացվեց: Խաղի էջը թարմացվելու է', false);
+            loadSettings();
+        })
+        .catch(error => {
+            showStatus('Սխալ տեղի ունեցավ', true);
+            console.error('Error:', error);
+        });
     }
 
     window.onload = loadSettings;
