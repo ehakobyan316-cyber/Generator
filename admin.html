@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Panel - ALOFFICIAL777</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #050510;
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        .main-wrapper {
+            width: 100%; height: 100%;
+            background: #0b021d;
+            background-image: 
+                radial-gradient(circle at 90% 10%, rgba(94, 23, 235, 0.3), transparent 40%),
+                radial-gradient(circle at 10% 90%, rgba(0, 242, 255, 0.2), transparent 40%),
+                linear-gradient(135deg, rgba(255,255,255,0.02) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.02) 75%, transparent 75%, transparent);
+            background-size: 100% 100%, 100% 100%, 50px 50px;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 20px;
+        }
+
+        .top-brand {
+            color: white;
+            font-size: 14px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            opacity: 0.9;
+        }
+
+        .dice-icon { font-size: 45px; margin-bottom: 10px; filter: drop-shadow(0 0 10px white); }
+
+        .header-container { position: relative; width: 100%; max-width: 400px; margin-bottom: 35px; }
+        
+        .header-box {
+            background: rgba(0, 242, 255, 0.05);
+            border: 3px solid #00f2ff;
+            border-radius: 15px 15px 55px 15px;
+            padding: 18px; text-align: center;
+            box-shadow: 0 0 25px rgba(0, 242, 255, 0.5), inset 0 0 15px rgba(0, 242, 255, 0.2);
+        }
+
+        .header-box h2 {
+            margin: 0; font-size: 17px; color: white; text-transform: uppercase;
+            line-height: 1.2; letter-spacing: 1px;
+        }
+        .header-box h2 span { color: #ffcc00; }
+
+        .game-badge {
+            background: #5e17eb; padding: 4px 18px; border-radius: 12px;
+            font-size: 10px; font-weight: bold; color: white;
+            position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+            border: 1px solid #bc00ff; box-shadow: 0 0 15px #bc00ff;
+        }
+
+        .settings-container {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00f2ff;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+        }
+
+        .settings-title {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(0, 242, 255, 0.8);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-field {
+            width: 100%;
+            background: #0f172a;
+            border: 1.5px solid #0084ff;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #00f2ff;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        .save-btn {
+            background: linear-gradient(180deg, #00f2ff 0%, #0084ff 100%);
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(0, 242, 255, 0.4);
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.5);
+        }
+
+        .back-btn {
+            background: linear-gradient(180deg, #ff6b6b 0%, #cc0000 100%);
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.5);
+        }
+
+        .status-message {
+            color: #4efd3a;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-message.show {
+            opacity: 1;
+        }
+
+        .status-message.error {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <div class="settings-container">
+        <div class="settings-title">ԹՎԵՐԻ ԿԱՐԳԱՎՈՐՈՒՄ</div>
+        
+        <div class="input-group">
+            <div class="input-label">ՄԻՆԻՄՈՒՄ ԱՐԺԵՔ</div>
+            <input type="number" id="minInput" class="input-field" value="1" placeholder="Մինիմում արժեք">
+        </div>
+        
+        <div class="input-group">
+            <div class="input-label">ՄԱՔՍԻՄՈՒՄ ԱՐԺԵՔ</div>
+            <input type="number" id="maxInput" class="input-field" value="1000" placeholder="Մաքսիմում արժեք">
+        </div>
+        
+        <div class="input-group">
+            <div class="input-label">ԸՆԹԱՑԻԿ ԱՐԺԵՔՆԵՐ</div>
+            <div id="currentValues" style="color: #4efd3a; font-size: 14px; padding: 10px; background: #0f172a; border-radius: 8px; border: 1px solid #0084ff;">
+                Min: 1, Max: 1000
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <div class="input-label">ԳԵՆԵՐԱՑՆԵԼՈՒ ԹԻՎԸ</div>
+            <input type="number" id="targetNumber" class="input-field" placeholder="Գրեք թիվը">
+        </div>
+        
+        <div class="input-group">
+            <div class="input-label">ՀԱՂԹԱԾ ԹՎԵՐԸ (առավելագույն 10, բաժանված ստորակետով)</div>
+            <input type="text" id="winningNumber" class="input-field" placeholder="օրինակ՝ 100,200,300">
+        </div>
+        
+        <button class="save-btn" onclick="saveSettings()">
+            ՊԱՀՊԱՆԵԼ ԿԱՐԳԱՎՈՐՈՒՄՆԵՐԸ
+        </button>
+        
+        <button class="save-btn" onclick="setTargetNumber()" style="background: linear-gradient(180deg, #ff6b6b 0%, #cc0000 100%);">
+            ՍԱՀՄԱՆԵԼ ԹԻՎԸ
+        </button>
+
+        <button class="back-btn" onclick="clearTargetNumber()">
+            ՄԱՔՐԵԼ ԹԻՎԸ
+        </button>
+        
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/settings';
+
+    function loadSettings() {
+        fetch(API_URL)
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Settings loaded:', data);
+                if (data.generatorMin) document.getElementById('minInput').value = data.generatorMin;
+                if (data.generatorMax) document.getElementById('maxInput').value = data.generatorMax;
+                if (data.winningNumbers) document.getElementById('winningNumber').value = data.winningNumbers;
+                updateCurrentValues();
+            })
+            .catch(error => {
+                console.error('Error loading settings:', error);
+                showStatus('Սխալ կարգավորումները բեռնելիս: ' + error.message, true);
+            });
+    }
+
+    function updateCurrentValues() {
+        const min = document.getElementById('minInput').value || 1;
+        const max = document.getElementById('maxInput').value || 1000;
+        document.getElementById('currentValues').textContent = `Min: ${min}, Max: ${max}`;
+    }
+
+    function setTargetNumber() {
+        const targetNum = parseInt(document.getElementById('targetNumber').value);
+        const min = parseInt(document.getElementById('minInput').value);
+        const max = parseInt(document.getElementById('maxInput').value);
+        
+        if (isNaN(targetNum)) {
+            showStatus('Խնդրում ենք մուտքագրել վավերական թիվ', true);
+            return;
+        }
+        
+        if (targetNum < min || targetNum > max) {
+            showStatus(`Թիվը պետք է լինի ${min}-ից ${max}-ի միջականում`, true);
+            return;
+        }
+        
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetNumber: targetNum })
+        })
+        .then(response => response.json())
+        .then(() => {
+            showStatus(`Թիվը սահմանվեց: ${targetNum}`, false);
+        })
+        .catch(error => {
+            showStatus('Սխալ տեղի ունեցավ', true);
+            console.error('Error:', error);
+        });
+    }
+
+    function saveSettings() {
+        const min = parseInt(document.getElementById('minInput').value);
+        const max = parseInt(document.getElementById('maxInput').value);
+        const winningInput = document.getElementById('winningNumber').value;
+        
+        if (isNaN(min) || isNaN(max)) {
+            showStatus('Խնդրում ենք մուտքագրել վավերական թվեր', true);
+            return;
+        }
+        
+        if (min < 0) {
+            showStatus('Մինիմում արժեքը պետք է 0-ից մեծ լինի', true);
+        const generatorEnabled = document.getElementById('generatorEnabled').checked;
+            return;
+        }
+        
+        if (max <= min) {
+            showStatus('Մաքսիմումը պետք է մեծ լինի մինիմումից', true);
+            return;
+        }
+        
+        let winningNumbers = '';
+        if (winningInput.trim() !== '') {
+            const nums = winningInput.split(',').map(num => num.trim()).filter(num => num !== '');
+            if (nums.length > 10) {
+                showStatus('Կարող եք մուտքագրել առավելագույն 10 թիվ', true);
+                return;
+            }
+            winningNumbers = winningInput;
+        }
+        
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ generatorMin: min, generatorMax: max, winningNumbers: winningNumbers })
+        })
+        .then(response => {
+            console.log('Save response status:', response.status);
+            return response.json();
+        })
+        .then(result => {
+            console.log('Save result:', result);
+            updateCurrentValues();
+            showStatus('Կարգավորումները հաջողությամբ պահպանվեցին', false);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showStatus('Սխալ տեղի ունեցավ: ' + error.message, true);
+        });
+    }
+
+    function showStatus(message, isError) {
+        const statusEl = document.getElementById('statusMessage');
+        statusEl.textContent = message;
+        statusEl.className = 'status-message show' + (isError ? ' error' : '');
+        
+        setTimeout(() => {
+            statusEl.classList.remove('show');
+        }, 3000);
+    }
+
+    function clearTargetNumber() {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetNumber: null })
+        })
+        .then(response => response.json())
+        .then(() => {
+            showStatus('Թիվը մաքրվեց: այժմ պատահական ռեժիմ', false);
+        })
+        .catch(error => {
+            showStatus('Սխալ տեղի ունեցավ', true);
+            console.error('Error:', error);
+        });
+    }
+
+    function goBack() {
+        window.open('index.html', '_self');
+    }
+
+    window.onload = loadSettings;
+</script>
+
+</body>
+</html>

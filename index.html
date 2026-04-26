@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator</title>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: Arial Black;
+    background: #050510;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* container */
+.phone-container {
+    width: 100%;
+    max-width: 375px;
+    height: 812px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* main */
+.main-wrapper {
+    width: 100%;
+    height: 100%;
+    background: url('fon.jpg') center/cover no-repeat;
+    position: relative;
+}
+
+/* ===== ԹՎԵՐԸ ՄԵՋՏԵՂ ===== */
+.digits-row {
+    position: absolute;
+    top: 46%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 20px; /* կամ 8px */
+}
+
+.digit-item {
+    width: 35px;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 65px;
+    color: white;
+    text-shadow: 0 0 10px white;
+}
+
+/* ===== ԿՈՃԱԿԸ ՆԵՐՔԵՎ ===== */
+.generate-btn {
+    position: absolute;
+    bottom: 220px; /* սա control արա եթե պետք լինի */
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: none;
+    background: url('knopka.jpg') center/cover no-repeat;
+    cursor: pointer;
+}
+
+/* ===== HISTORY ՆԵՐՔԵՎ ===== */
+.history-panel {
+    position: absolute;
+    bottom: 40px;
+    width: 100%;
+    text-align: center;
+}
+
+.history-head {
+    color: #aaa;
+    font-size: 12px;
+}
+
+#history-content {
+    color: white;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* modal */
+.winning-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.winning-modal.show { display: flex; }
+
+.modal-content {
+    background: #111;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid gold;
+}
+
+.modal-header { color: gold; font-size: 20px; margin-bottom: 15px; }
+.modal-body { color: white; font-size: 30px; margin-bottom: 20px; }
+
+.modal-close-btn {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 8px;
+    background: gold;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="phone-container">
+    <div class="main-wrapper">
+
+        <!-- ԹՎԵՐ -->
+        <div class="digits-row" id="digitBox">
+            <div class="digit-item">1</div>
+        </div>
+
+        <!-- ԿՈՃԱԿ -->
+        <button class="generate-btn" onclick="runGenerator()"></button>
+
+        <!-- HISTORY -->
+        <div class="history-panel">
+            <div class="history-head">ՎԵՐՋԻՆ ԹՎԵՐԸ</div>
+            <div id="history-content">[]</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- modal -->
+<div id="winningModal" class="winning-modal">
+    <div class="modal-content">
+        <div class="modal-header">Շնորհավոր դուք հաղթեցիք</div>
+        <div class="modal-body" id="winningAmount"></div>
+        <button class="modal-close-btn" onclick="closeModal()">ՓԱԿԵԼ</button>
+    </div>
+</div>
+
+<script>
+const API_URL = '/api/settings';
+
+let logs = [];
+let settings = { generatorMin: 1, generatorMax: 1000, targetNumber: null, winningNumbers: '' };
+
+function loadSettings() {
+    fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Settings loaded:', data);
+            settings = data;
+        })
+        .catch(error => {
+            console.error('Error loading settings:', error);
+        });
+}
+
+function runGenerator() {
+
+    let min = parseInt(settings.generatorMin) || 1;
+    let max = parseInt(settings.generatorMax) || 1000;
+
+    if (isNaN(min)) min = 1;
+    if (isNaN(max)) max = 1000;
+
+    if (min >= max) return;
+
+    let result;
+    let targetNum = settings.targetNumber;
+
+    if (targetNum !== null && targetNum !== '') {
+        result = parseInt(targetNum);
+        if (isNaN(result)) result = Math.floor(Math.random() * (max - min + 1)) + min;
+    } else {
+        result = Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    let digits = result.toString().split('');
+    let container = document.getElementById('digitBox');
+    container.innerHTML = '';
+
+    digits.forEach(d => {
+        container.innerHTML += `<div class="digit-item">${d}</div>`;
+    });
+
+    let winningNumInput = settings.winningNumbers || '';
+
+    if (winningNumInput !== null && winningNumInput.trim() !== '') {
+        const winningNumbers = winningNumInput
+            .split(',')
+            .map(n => parseInt(n.trim()))
+            .filter(n => !isNaN(n));
+
+        if (winningNumbers.includes(result)) {
+            document.getElementById('winningAmount').textContent = result;
+            document.getElementById('winningModal').classList.add('show');
+        }
+    }
+
+    logs.unshift(result);
+    if(logs.length > 6) logs.pop();
+
+    localStorage.setItem('generatorLogs', JSON.stringify(logs));
+    document.getElementById('history-content').innerText =
+        logs.map(x => `[${x}]`).join(', ');
+}
+
+function closeModal() {
+    document.getElementById('winningModal').classList.remove('show');
+}
+
+window.onload = function () {
+    loadSettings();
+    
+    let savedLogs = JSON.parse(localStorage.getItem('generatorLogs')) || [];
+    logs = savedLogs;
+
+    document.getElementById('history-content').innerText =
+        logs.map(x => `[${x}]`).join(', ');
+    
+    // Refresh settings every 5 seconds
+    setInterval(loadSettings, 5000);
+};
+</script>
+
+</body>
+</html>
