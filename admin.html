@@ -212,7 +212,7 @@
 </div>
 
 <script>
-    const API_URL = '/api/settings';
+    const API_URL = 'https://generator-xzgq.onrender.com/api/settings';
 
     function loadSettings() {
         fetch(API_URL)
@@ -240,18 +240,21 @@
     }
 
     function setTargetNumber() {
-        const targetNum = parseInt(document.getElementById('targetNumber').value);
+        const targetInput = document.getElementById('targetNumber').value.trim();
+        const targetNum = targetInput === '' ? null : parseInt(targetInput);
         const min = parseInt(document.getElementById('minInput').value);
         const max = parseInt(document.getElementById('maxInput').value);
         
-        if (isNaN(targetNum)) {
-            showStatus('Խնդրում ենք մուտքագրել վավերական թիվ', true);
-            return;
-        }
-        
-        if (targetNum < min || targetNum > max) {
-            showStatus(`Թիվը պետք է լինի ${min}-ից ${max}-ի միջականում`, true);
-            return;
+        if (targetNum !== null) {
+            if (isNaN(targetNum)) {
+                showStatus('Խնդրում ենք մուտքագրել վավերական թիվ', true);
+                return;
+            }
+            
+            if (targetNum < min || targetNum > max) {
+                showStatus(`Թիվը պետք է լինի ${min}-ից ${max}-ի միջականում`, true);
+                return;
+            }
         }
         
         fetch(API_URL, {
@@ -261,7 +264,11 @@
         })
         .then(response => response.json())
         .then(() => {
-            showStatus(`Թիվը սահմանվեց: ${targetNum}`, false);
+            if (targetNum !== null) {
+                showStatus(`Թիվը սահմանվեց: ${targetNum}`, false);
+            } else {
+                showStatus('Պատահական ռեժիմ', false);
+            }
         })
         .catch(error => {
             showStatus('Սխալ տեղի ունեցավ', true);
@@ -281,7 +288,6 @@
         
         if (min < 0) {
             showStatus('Մինիմում արժեքը պետք է 0-ից մեծ լինի', true);
-        const generatorEnabled = document.getElementById('generatorEnabled').checked;
             return;
         }
         
